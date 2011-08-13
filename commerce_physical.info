@@ -1,0 +1,5 @@
+name = Physical Product
+description = Defines fields (e.g. weight and dimensions) to support creating physical product types.
+package = Commerce (contrib)
+dependencies[] = commerce_product
+core = 7.x
