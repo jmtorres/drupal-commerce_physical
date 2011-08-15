@@ -225,7 +225,10 @@ function commerce_physical_field_widget_form(&$form, &$form_state, $field, $inst
     if (empty($settings['unit_select_list']) && $unit == $settings['default_unit']) {
       // Display the unit of measurement after the textfield.
       $element['weight']['#field_suffix'] = commerce_physical_weight_unit_abbreviation($unit);
-      $element['weight']['#suffix'] = '<div class="description">' . $element['#description'] . '</div>';
+
+      if (!empty($element['#description'])) {
+        $element['weight']['#suffix'] = '<div class="description">' . $element['#description'] . '</div>';
+      }
 
       // Add a hidden value for the default unit of measurement.
       $element['unit'] = array(
@@ -251,8 +254,12 @@ function commerce_physical_field_widget_form(&$form, &$form_state, $field, $inst
         '#type' => 'select',
         '#options' => $options,
         '#default_value' => $unit,
-        '#suffix' => '<div class="description">' . $element['#description'] . '</div></div>',
+        '#suffix' => '</div>',
       );
+
+      if (!empty($element['#description'])) {
+        $element['unit']['#suffix'] = '<div class="description">' . $element['#description'] . '</div></div>';
+      }
     }
 
     return $element;
