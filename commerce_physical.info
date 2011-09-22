@@ -1,5 +1,6 @@
 name = Physical Product
-description = Defines fields (e.g. weight and dimensions) to support creating physical product types.
+description = Provides API support for working with physical product types in Drupal Commerce.
 package = Commerce (contrib)
 dependencies[] = commerce_product
+dependencies[] = physical
 core = 7.x
