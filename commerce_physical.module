@@ -10,7 +10,26 @@
  * Determines the weight field to use for a given entity.
  */
 function commerce_physical_entity_weight_field_name($entity_type, $entity) {
-  return 'field_weight';
+  $bundle = field_extract_bundle($entity_type, $entity);
+  $field_name = '';
+
+  // Look for the first weight field available for the entity.
+  foreach (field_info_instances($entity_type, $bundle) as $instance_name => $instance) {
+    // Load the field info for the current instance.
+    $field = field_info_field($instance['field_name']);
+
+    // If it's of the proper type...
+    if ($field['type'] == 'physical_weight') {
+      // Save its name and exit the loop.
+      $field_name = $instance_name;
+      break;
+    }
+  }
+
+  // Allow other modules to specify a different field name.
+  drupal_alter('commerce_physical_entity_weight_field_name', $field_name, $entity_type, $entity);
+
+  return $field_name;
 }
 
 /**
