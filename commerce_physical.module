@@ -4,3 +4,94 @@
  * @file
  * Provides API support for working with physical product types in Drupal Commerce.
  */
+
+
+/**
+ * Determines the weight field to use for a given entity.
+ */
+function commerce_physical_entity_weight_field_name($entity_type, $entity) {
+  return 'field_weight';
+}
+
+/**
+ * Determines the weight to use for a line item on an order.
+ */
+function commerce_physical_line_item_weight($line_item) {
+  return array('weight' => 12, 'unit' => 'lb');
+}
+
+/**
+ * Determines the weight of an entire order.
+ *
+ * @param $order
+ *   The order object whose weight value should be calculated.
+ * @param $unit
+ *   The unit to convert weights to.
+ */
+function commerce_physical_order_weight($order, $unit = 'lb') {
+  $order_wrapper = entity_metadata_wrapper('commerce_order', $order);
+  $weight = array('weight' => 0, 'unit' => $unit);
+
+  // Loop over each line item on the order.
+  foreach ($order_wrapper->commerce_line_items as $delta => $line_item_wrapper) {
+    // Get the weight value for the line item.
+    $line_item_weight = commerce_physical_line_item_weight($line_item_wrapper->value());
+
+    // Add it to the running total converting it to the required weight unit.
+    $converted_weight = physical_weight_convert($line_item_weight, $unit);
+    $weight['weight'] += $converted_weight['weight'];
+  }
+
+  return $weight;
+}
+
+/**
+ * Determines whether or not a line item should be considered shippable.
+ */
+function commerce_physical_line_item_shippable($line_item) {
+  return TRUE;
+}
+
+/**
+ * Determines whether or not an order should be considered shippable.
+ *
+ * @param $order
+ *   The order object whose shippability should be determined.
+ *
+ * @return
+ *   Boolean indicating whether or not the given order is shippable.
+ */
+function commerce_physical_order_shippable($order) {
+  $order_wrapper = entity_metadata_wrapper('commerce_order', $order);
+
+  foreach ($order_wrapper->commerce_line_items as $delta => $line_item_wrapper) {
+    if (commerce_physical_line_item_shippable($line_item_wrapper->value())) {
+      return TRUE;
+    }
+  }
+
+  return FALSE;
+}
+
+/**
+ * Determines the name of the shipping customer profile reference field for the
+ * given order.
+ */
+function commerce_physical_order_shipping_field_name($order) {
+  return 'commerce_customer_shipping';
+}
+
+/**
+ * Determines the name of the phone number field of a customer profile.
+ */
+function commerce_physical_customer_profile_phone_number($profile) {
+  return 'field_phone';
+}
+
+/**
+ * Determines whether or not a shipping customer profile should be considered as
+ * a residential address.
+ */
+function commerce_physical_customer_profile_residential($profile) {
+  return TRUE;
+}
