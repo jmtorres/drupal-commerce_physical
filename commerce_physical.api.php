@@ -7,8 +7,8 @@
 
 
 /**
- * Allows modules to specify a different weight field name for the specified
- * entity than the one determined by Commerce Physical Product.
+ * Allows modules to specify a different weight field name for the given entity
+ * than the one determined by Commerce Physical Product.
  *
  * @param &$field_name
  *   The name of the field instance on the entity that is currently specified as
@@ -87,5 +87,23 @@ function hook_commerce_physical_line_item_shippable(&$shippable, $line_item) {
  * @see commerce_physical_order_shippable()
  */
 function hook_commerce_physical_order_shippable(&$shippable, $order) {
+  // No example.
+}
+
+/**
+ * Allows modules to specify a different shipping customer profile reference
+ * field name for the given order than the one determined by Commerce Physical
+ * Product.
+ *
+ * @param &$field_name
+ *   The name of the field instance on the order that is currently specified as
+ *   the customer profile reference field to use for shipping information.
+ * @param $order
+ *   The order whose shipping customer profile reference field name is being
+ *   determined.
+ *
+ * @see commerce_physical_order_shipping_field_name()
+ */
+function hook_commerce_physical_order_shipping_field_name(&$field_name, $order) {
   // No example.
 }

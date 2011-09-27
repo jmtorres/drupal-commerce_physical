@@ -184,9 +184,45 @@ function commerce_physical_order_shippable($order) {
 /**
  * Determines the name of the shipping customer profile reference field for the
  * given order.
+ *
+ * @param $order
+ *   The order whose shipping customer profile reference field name should be
+ *   determined.
+ *
+ * @return
+ *   The name of the field to use on the order to find shipping information or
+ *   NULL if none was found; defaults to commerce_customer_shipping if available
+ *   or another customer profile reference if not (preferring profiles other
+ *   than the default billing profile if available).
  */
 function commerce_physical_order_shipping_field_name($order) {
-  return 'commerce_customer_shipping';
+  $field_name = NULL;
+
+  if (!empty($order->commerce_customer_shipping)) {
+    $field_name = 'commerce_customer_shipping';
+  }
+  else {
+    // Look for customer profile references fields available for the order.
+    foreach (field_info_instances('commerce_order', $order->type) as $instance_name => $instance) {
+      // Load the field info for the current instance.
+      $field = field_info_field($instance['field_name']);
+
+      // If it's of the proper type...
+      if ($field['type'] == 'commerce_customer_profile_reference') {
+        // Save its name and exit the loop if it isn't the billing profile.
+        $field_name = $instance_name;
+
+        if ($field_name != 'commerce_customer_billing') {
+          break;
+        }
+      }
+    }
+  }
+
+  // Allow other modules to specify a different field name.
+  drupal_alter('commerce_physical_order_shipping_field_name', $field_name, $order);
+
+  return $field_name;
 }
 
 /**
