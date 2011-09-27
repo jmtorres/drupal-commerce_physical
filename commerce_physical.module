@@ -124,9 +124,32 @@ function commerce_physical_order_weight($order, $unit = 'lb') {
 
 /**
  * Determines whether or not a line item should be considered shippable.
+ *
+ * @param $line_item
+ *   The line item object whose shippability is being determined.
+ *
+ * @return
+ *   Boolean indicating whether or not the given line item represents something
+ *   shippable; defaults to FALSE unless the line item represents a product line
+ *   item with a discernible weight.
  */
 function commerce_physical_line_item_shippable($line_item) {
-  return TRUE;
+  $shippable = FALSE;
+
+  // If this is a product line item...
+  if (in_array($line_item->type, commerce_product_line_item_types())) {
+    // Mark this line item as shippable if we can determine its weight.
+    $weight = commerce_physical_product_line_item_weight($line_item);
+
+    if (!empty($weight)) {
+      $shippable = TRUE;
+    }
+  }
+
+  // Allow other modules to alter the shippability of the line item.
+  drupal_alter('commerce_physical_line_item_shippable', $shippable, $line_item);
+
+  return $shippable;
 }
 
 /**
@@ -136,18 +159,26 @@ function commerce_physical_line_item_shippable($line_item) {
  *   The order object whose shippability should be determined.
  *
  * @return
- *   Boolean indicating whether or not the given order is shippable.
+ *   Boolean indicating whether or not the given order is shippable; defaults to
+ *   FALSE unless any line item on the order is determined to be shippable.
  */
 function commerce_physical_order_shippable($order) {
   $order_wrapper = entity_metadata_wrapper('commerce_order', $order);
+  $shippable = FALSE;
 
+  // Loop over all the line items on the order.
   foreach ($order_wrapper->commerce_line_items as $delta => $line_item_wrapper) {
+    // Mark the order as shippable if the current line item is determined to be
+    // shippable.
     if (commerce_physical_line_item_shippable($line_item_wrapper->value())) {
-      return TRUE;
+      $shippable = TRUE;
     }
   }
 
-  return FALSE;
+  // Allow other modules to alter the shippability of the line item.
+  drupal_alter('commerce_physical_order_shippable', $shippable, $order);
+
+  return $shippable;
 }
 
 /**

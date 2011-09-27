@@ -57,3 +57,35 @@ function hook_commerce_physical_product_line_item_weight(&$weight, $line_item) {
 function hook_commerce_physical_order_weight(&$weight, $order, $unit) {
   // No example.
 }
+
+/**
+ * Allows modules to alter the shippability that has been determined for a line
+ * item.
+ *
+ * @param &$shippable
+ *   Boolean indicating whether or not the given line item has been determined
+ *   to be shippable.
+ * @param $line_item
+ *   The line item object whose shippability is being determined.
+ *
+ * @see commerce_physical_line_item_shippable()
+ */
+function hook_commerce_physical_line_item_shippable(&$shippable, $line_item) {
+  // No example.
+}
+
+/**
+ * Allows modules to alter the shippability that has been determined for an
+ * order.
+ *
+ * @param &$shippable
+ *   Boolean indicating whether or not the given order has been determined to be
+ *   shippable.
+ * @param $order
+ *   The order object whose shippability is being determined.
+ *
+ * @see commerce_physical_order_shippable()
+ */
+function hook_commerce_physical_order_shippable(&$shippable, $order) {
+  // No example.
+}
