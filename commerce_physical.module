@@ -8,10 +8,19 @@
 
 /**
  * Determines the weight field to use for a given entity.
+ *
+ * @param $entity_type
+ *   The type of entity passed to the function.
+ * @param $entity
+ *   The actual entity whose weight field name should be determined.
+ *
+ * @return
+ *   The name of the field to use on the entity to find a weight value or NULL
+ *   if none was found.
  */
 function commerce_physical_entity_weight_field_name($entity_type, $entity) {
   $bundle = field_extract_bundle($entity_type, $entity);
-  $field_name = '';
+  $field_name = NULL;
 
   // Look for the first weight field available for the entity.
   foreach (field_info_instances($entity_type, $bundle) as $instance_name => $instance) {
@@ -33,10 +42,42 @@ function commerce_physical_entity_weight_field_name($entity_type, $entity) {
 }
 
 /**
- * Determines the weight to use for a line item on an order.
+ * Determines the weight to use for a product line item on an order.
+ *
+ * @param $line_item
+ *   A product line item whose weight should be determined.
+ *
+ * @return
+ *   A weight field value array representing the weight of the product line item
+ *   or NULL if none was found.
  */
-function commerce_physical_line_item_weight($line_item) {
-  return array('weight' => 12, 'unit' => 'lb');
+function commerce_physical_product_line_item_weight($line_item) {
+  $line_item_wrapper = entity_metadata_wrapper('commerce_line_item', $line_item);
+  $weight = NULL;
+
+  // If the line item references a valid product...
+  if (!empty($line_item_wrapper->commerce_product)) {
+    $product = $line_item_wrapper->commerce_product->value();
+
+    if (!empty($product)) {
+      // If the product has a valid weight field...
+      $field_name = commerce_physical_entity_weight_field_name('commerce_product', $product);
+
+      if (!empty($field_name) && !empty($product->{$field_name})) {
+        // Extract the weight value from the product.
+        $product_wrapper = entity_metadata_wrapper('commerce_product', $product);
+        $weight = $product_wrapper->{$field_name}->value();
+
+        // Multiply the weight value by the quantity of the line item.
+        $weight['weight'] *= $line_item->quantity;
+      }
+    }
+  }
+
+  // Allow other modules to alter the weight if necessary.
+  drupal_alter('commerce_physical_product_line_item_weight', $weight, $line_item);
+
+  return $weight;
 }
 
 /**
@@ -45,21 +86,38 @@ function commerce_physical_line_item_weight($line_item) {
  * @param $order
  *   The order object whose weight value should be calculated.
  * @param $unit
- *   The unit to convert weights to.
+ *   The unit of measurement to use for the returned weight of the order.
+ *
+ * @return
+ *   A weight field value array representing the total weight of the order using
+ *   the specified unit of measurement or NULL if no weight could be determined.
  */
 function commerce_physical_order_weight($order, $unit = 'lb') {
   $order_wrapper = entity_metadata_wrapper('commerce_order', $order);
-  $weight = array('weight' => 0, 'unit' => $unit);
+  $weight = NULL;
 
   // Loop over each line item on the order.
   foreach ($order_wrapper->commerce_line_items as $delta => $line_item_wrapper) {
-    // Get the weight value for the line item.
-    $line_item_weight = commerce_physical_line_item_weight($line_item_wrapper->value());
+    // Get the weight value of product line items.
+    if (in_array($line_item_wrapper->type->value(), commerce_product_line_item_types())) {
+      $line_item_weight = commerce_physical_product_line_item_weight($line_item_wrapper->value());
 
-    // Add it to the running total converting it to the required weight unit.
-    $converted_weight = physical_weight_convert($line_item_weight, $unit);
-    $weight['weight'] += $converted_weight['weight'];
+      // Add it to the running total converting it to the required weight unit.
+      if (!empty($line_item_weight['weight'])) {
+        $converted_weight = physical_weight_convert($line_item_weight, $unit);
+
+        if (empty($weight['weight'])) {
+          $weight = $converted_weight;
+        }
+        else {
+          $weight['weight'] += $converted_weight['weight'];
+        }
+      }
+    }
   }
+
+  // Allow other modules to alter the weight if necessary.
+  drupal_alter('commerce_physical_order_weight', $weight, $order, $unit);
 
   return $weight;
 }
