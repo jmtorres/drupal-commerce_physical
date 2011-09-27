@@ -118,8 +118,24 @@ function hook_commerce_physical_order_shipping_field_name_alter(&$field_name, $o
  * @param $profile
  *   The customer profile whose phone number field is being determined.
  *
- * @see commerce_physical_profile_phone_number_field_name()
+ * @see commerce_physical_customer_profile_phone_number_field_name()
  */
-function hook_commerce_physical_profile_phone_number_field_name_alter(&$field_name, $profile) {
+function hook_commerce_physical_customer_profile_phone_number_field_name_alter(&$field_name, $profile) {
+  // No example.
+}
+
+/**
+ * Allows modules to specify a different residential status for the given
+ * customer profile than the one determined by Commerce Physical Product.
+ *
+ * @param &$residential
+ *   Boolean indicating whether or not the given customer profile has been
+ *   determined to contain a residential address.
+ * @param $profile
+ *   The customer profile whose residential status is being determined.
+ *
+ * @see commerce_physical_customer_profile_residential()
+ */
+function hook_commerce_physical_customer_profile_residential_alter(&$residential, $profile) {
   // No example.
 }

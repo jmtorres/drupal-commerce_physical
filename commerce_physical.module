@@ -237,7 +237,7 @@ function commerce_physical_order_shipping_field_name($order) {
  *   available; otherwise it's up to you to alter it in a custom module since we
  *   don't want to depend on an actual phone number field.
  */
-function commerce_physical_profile_phone_number_field_name($profile) {
+function commerce_physical_customer_profile_phone_number_field_name($profile) {
   if (!empty($profile->field_phone)) {
     $field_name = 'field_phone';
   }
@@ -249,7 +249,7 @@ function commerce_physical_profile_phone_number_field_name($profile) {
   }
 
   // Allow other modules to specify a different field name.
-  drupal_alter('commerce_physical_profile_phone_number_field_name', $field_name, $profile);
+  drupal_alter('commerce_physical_customer_profile_phone_number_field_name', $field_name, $profile);
 
   return $field_name;
 }
@@ -257,7 +257,19 @@ function commerce_physical_profile_phone_number_field_name($profile) {
 /**
  * Determines whether or not a shipping customer profile should be considered as
  * a residential address.
+ *
+ * @param $profile
+ *   The customer profile whose residential status should be determined.
+ *
+ * @return
+ *   Boolean indicating whether or not the given profile has a residential
+ *   address; defaults to TRUE unless otherwise determined by a custom module.
  */
 function commerce_physical_customer_profile_residential($profile) {
-  return TRUE;
+  $residential = TRUE;
+
+  // Allow other modules to determine if the profile has a residential address.
+  drupal_alter('commerce_physical_customer_profile_residential', $residential, $profile);
+
+  return $residential;
 }
