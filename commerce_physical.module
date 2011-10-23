@@ -204,8 +204,8 @@ function commerce_physical_product_line_item_dimensions($line_item) {
  *   volume of the order in the related cubic unit.
  *
  * @return
- *   A volume value array representing the total 'volume' of the order in the
- *   'unit' specified or NULL if no volume could be determined.
+ *   A volume value array with keys representing the total 'volume' of the order
+ *   in the 'unit' specified or NULL if no volume could be determined.
  */
 function commerce_physical_order_volume($order, $unit = 'in') {
   $order_wrapper = entity_metadata_wrapper('commerce_order', $order);
